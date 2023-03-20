@@ -8,13 +8,15 @@
     <color name="transparent">#00000000</color>
     <color name="colorAccent">@android:color/system_accent1_600</color>
     <color name="colorAccentVariant">@android:color/system_accent3_600</color>
-    <color name="rippleAccent">#1A000000</color>
-    <color name="rippleDark">#33000000</color>
+    <color name="rippleAccent">@color/color_container_overlay_light</color>
+    <color name="rippleDark">#1A000000</color>
+    <color name="rippleDarker">#33000000</color>
     <color name="holo_blue_light">@android:color/system_accent1_600</color>
     <color name="holo_green_light">@android:color/system_accent3_600</color>
-    <color name="colorBackground">@android:color/system_neutral1_50</color>
+    <color name="colorBackground">@android:color/system_neutral2_50</color>
     <color name="colorContainer">@android:color/system_neutral2_50</color>
     <color name="colorContainerOverlay">@color/color_container_overlay_light</color>
+    <color name="colorNavbarOverlay">@color/color_navbar_overlay_light</color>
     <color name="textColorPrimary">@color/black</color>
     <color name="textColorPrimaryInverse">#FFFFFFFF</color>
     <color name="textColorSecondary">#CC000000</color>
@@ -27,13 +29,11 @@
     <color name="offStateColor3">#40000000</color>
     <color name="offStateColor4">#66FFFFFF</color>
     <color name="shadow">#14000000</color>
-    <color name="neumorph_outline_start">#FFD4D4D4</color>
+    <color name="neumorph_outline_start">#FFBDBDBD</color>
     <color name="neumorph_outline_end">#FFF0F0F0</color>
-    <color name="switch_track_layer">#B3FFFFFF</color>
     <color name="pixel_black_bg">@android:color/system_neutral2_900</color>
     <color name="splash_logo">@color/colorAccent</color>
     <color name="switch_track_inactive">@android:color/system_neutral2_100</color>
-    <color name="switch_thumb_active">@android:color/system_neutral2_10</color>
     <color name="switch_thumb_inactive">@android:color/system_neutral2_600</color>
 
     <color name="colorPrimaryLight">@color/material_dynamic_primary40</color>

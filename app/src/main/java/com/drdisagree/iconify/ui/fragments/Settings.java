@@ -1,6 +1,5 @@
-package com.drdisagree.iconify.ui.activities;
+package com.drdisagree.iconify.ui.fragments;
 
-import static com.drdisagree.iconify.common.Preferences.EASTER_EGG;
 import static com.drdisagree.iconify.common.Preferences.FIRST_INSTALL;
 import static com.drdisagree.iconify.common.Preferences.FORCE_APPLY_XPOSED_CHOICE;
 import static com.drdisagree.iconify.common.Preferences.RESTART_SYSUI_AFTER_BOOT;
@@ -9,14 +8,13 @@ import static com.drdisagree.iconify.common.Preferences.USE_LIGHT_ACCENT;
 
 import android.annotation.SuppressLint;
 import android.content.Context;
-import android.content.Intent;
 import android.content.SharedPreferences;
 import android.graphics.text.LineBreaker;
 import android.os.Bundle;
 import android.os.Handler;
-import android.view.Menu;
-import android.view.MenuInflater;
-import android.view.MenuItem;
+import android.view.LayoutInflater;
+import android.view.View;
+import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.RadioButton;
 import android.widget.RadioGroup;
@@ -24,10 +22,7 @@ import android.widget.Switch;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import androidx.annotation.NonNull;
-import androidx.appcompat.app.AlertDialog;
-import androidx.appcompat.app.AppCompatActivity;
-import androidx.appcompat.widget.Toolbar;
+import androidx.fragment.app.Fragment;
 
 import com.drdisagree.iconify.Iconify;
 import com.drdisagree.iconify.R;
@@ -37,16 +32,13 @@ import com.drdisagree.iconify.ui.views.LoadingDialog;
 import com.drdisagree.iconify.utils.FabricatedUtil;
 import com.drdisagree.iconify.utils.OverlayUtil;
 import com.drdisagree.iconify.utils.SystemUtil;
-import com.google.android.material.appbar.CollapsingToolbarLayout;
 
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 
-public class Settings extends AppCompatActivity {
+public class Settings extends Fragment {
 
-    private static final int REQUESTCODE_IMPORT = 1;
-    private static final int REQUESTCODE_EXPORT = 2;
     public static List<String> EnabledOverlays = OverlayUtil.getEnabledOverlayList();
     LoadingDialog loadingDialog;
 
@@ -75,25 +67,15 @@ public class Settings extends AppCompatActivity {
         SystemUtil.restartSystemUI();
     }
 
-    @SuppressLint({"SetTextI18n", "WorldReadableFiles"})
     @Override
-    protected void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_settings);
+    public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
+        View view = inflater.inflate(R.layout.fragment_settings, container, false);
 
         // Show loading dialog
-        loadingDialog = new LoadingDialog(this);
-
-        // Header
-        CollapsingToolbarLayout collapsing_toolbar = findViewById(R.id.collapsing_toolbar);
-        collapsing_toolbar.setTitle(getResources().getString(R.string.activity_title_settings));
-        Toolbar toolbar = findViewById(R.id.toolbar);
-        setSupportActionBar(toolbar);
-        Objects.requireNonNull(getSupportActionBar()).setDisplayHomeAsUpEnabled(true);
-        getSupportActionBar().setDisplayShowHomeEnabled(true);
+        loadingDialog = new LoadingDialog(requireActivity());
 
         // Use light accent
-        @SuppressLint("UseSwitchCompatOrMaterialCode") Switch use_light_accent = findViewById(R.id.use_light_accent);
+        @SuppressLint("UseSwitchCompatOrMaterialCode") Switch use_light_accent = view.findViewById(R.id.use_light_accent);
         if (Prefs.getBoolean(USE_LIGHT_ACCENT, false) || Prefs.getBoolean("IconifyComponentAMACL.overlay") || Prefs.getBoolean("IconifyComponentAMGCL.overlay")) {
             Prefs.putBoolean(USE_LIGHT_ACCENT, true);
             use_light_accent.setChecked(true);
@@ -123,7 +105,7 @@ public class Settings extends AppCompatActivity {
         });
 
         // Restart sysui after boot
-        @SuppressLint("UseSwitchCompatOrMaterialCode") Switch restart_sysui_after_boot = findViewById(R.id.restart_sysui_after_boot);
+        @SuppressLint("UseSwitchCompatOrMaterialCode") Switch restart_sysui_after_boot = view.findViewById(R.id.restart_sysui_after_boot);
         restart_sysui_after_boot.setChecked(Prefs.getBoolean(RESTART_SYSUI_AFTER_BOOT, false));
         restart_sysui_after_boot.setOnCheckedChangeListener((buttonView, isChecked) -> {
             Prefs.putBoolean(RESTART_SYSUI_AFTER_BOOT, isChecked);
@@ -134,20 +116,20 @@ public class Settings extends AppCompatActivity {
         });
 
         // Show xposed warn
-        @SuppressLint("UseSwitchCompatOrMaterialCode") Switch hide_warn_message = findViewById(R.id.hide_warn_message);
+        @SuppressLint("UseSwitchCompatOrMaterialCode") Switch hide_warn_message = view.findViewById(R.id.hide_warn_message);
         hide_warn_message.setChecked(Prefs.getBoolean(SHOW_XPOSED_WARN, true));
         hide_warn_message.setOnCheckedChangeListener((buttonView, isChecked) -> Prefs.putBoolean(SHOW_XPOSED_WARN, isChecked));
 
         // Force apply method
         if (Prefs.getInt(FORCE_APPLY_XPOSED_CHOICE, 0) == 0)
-            ((RadioButton) findViewById(R.id.apply_method_dark_mode)).setChecked(true);
+            ((RadioButton) view.findViewById(R.id.apply_method_dark_mode)).setChecked(true);
         else if (Prefs.getInt(FORCE_APPLY_XPOSED_CHOICE, 0) == 1)
-            ((RadioButton) findViewById(R.id.apply_method_restart_sysui)).setChecked(true);
+            ((RadioButton) view.findViewById(R.id.apply_method_restart_sysui)).setChecked(true);
         else if (Prefs.getInt(FORCE_APPLY_XPOSED_CHOICE, 0) == -1)
-            ((RadioButton) findViewById(R.id.apply_method_do_nothing)).setChecked(true);
+            ((RadioButton) view.findViewById(R.id.apply_method_do_nothing)).setChecked(true);
 
         // Statusbar color source select
-        RadioGroup force_apply_method_selector = findViewById(R.id.force_apply_method_selector);
+        RadioGroup force_apply_method_selector = view.findViewById(R.id.force_apply_method_selector);
 
         force_apply_method_selector.setOnCheckedChangeListener((group, checkedId) -> {
             if (Objects.equals(checkedId, R.id.apply_method_dark_mode))
@@ -159,9 +141,9 @@ public class Settings extends AppCompatActivity {
         });
 
         // Disable Everything
-        TextView list_title_disableEverything = findViewById(R.id.list_title_disableEverything);
-        TextView list_desc_disableEverything = findViewById(R.id.list_desc_disableEverything);
-        Button button_disableEverything = findViewById(R.id.button_disableEverything);
+        TextView list_title_disableEverything = view.findViewById(R.id.list_title_disableEverything);
+        TextView list_desc_disableEverything = view.findViewById(R.id.list_desc_disableEverything);
+        Button button_disableEverything = view.findViewById(R.id.button_disableEverything);
 
         list_title_disableEverything.setText(getResources().getString(R.string.disable_everything_title));
         list_desc_disableEverything.setText(getResources().getString(R.string.disable_everything_desc));
@@ -176,7 +158,7 @@ public class Settings extends AppCompatActivity {
             Runnable runnable = () -> {
                 disableEverything();
 
-                runOnUiThread(() -> new Handler().postDelayed(() -> {
+                requireActivity().runOnUiThread(() -> new Handler().postDelayed(() -> {
                     // Hide loading dialog
                     loadingDialog.hide();
 
@@ -190,9 +172,9 @@ public class Settings extends AppCompatActivity {
         });
 
         // Restart SystemUI
-        TextView list_title_restartSysui = findViewById(R.id.list_title_restartSysui);
-        TextView list_desc_restartSysui = findViewById(R.id.list_desc_restartSysui);
-        Button button_restartSysui = findViewById(R.id.button_restartSysui);
+        TextView list_title_restartSysui = view.findViewById(R.id.list_title_restartSysui);
+        TextView list_desc_restartSysui = view.findViewById(R.id.list_desc_restartSysui);
+        Button button_restartSysui = view.findViewById(R.id.button_restartSysui);
 
         list_title_restartSysui.setText(getResources().getString(R.string.restart_sysui_title));
         list_desc_restartSysui.setText(getResources().getString(R.string.restart_sysui_desc));
@@ -214,99 +196,8 @@ public class Settings extends AppCompatActivity {
 
             return true;
         });
-    }
 
-    @Override
-    public boolean onSupportNavigateUp() {
-        onBackPressed();
-        return true;
-    }
-
-    @Override
-    public boolean onCreateOptionsMenu(Menu menu) {
-        MenuInflater inflater = getMenuInflater();
-        inflater.inflate(R.menu.settings_menu, menu);
-
-        menu.findItem(R.id.menu_experimental_features).setVisible(Prefs.getBoolean(EASTER_EGG));
-
-        return super.onCreateOptionsMenu(menu);
-    }
-
-    @Override
-    public boolean onOptionsItemSelected(@NonNull MenuItem item) {
-        int itemID = item.getItemId();
-
-        if (itemID == android.R.id.home) {
-            onBackPressed();
-        } else if (itemID == R.id.menu_updates) {
-            Intent intent = new Intent(Settings.this, AppUpdates.class);
-            startActivity(intent);
-        } else if (itemID == R.id.menu_changelog) {
-            Intent intent = new Intent(Settings.this, Changelog.class);
-            startActivity(intent);
-        } else if (itemID == R.id.menu_exportPrefs) {
-            exportSettings();
-        } else if (itemID == R.id.menu_importPrefs) {
-            importSettings();
-        } else if (itemID == R.id.menu_experimental_features) {
-            Intent intent = new Intent(Settings.this, Experimental.class);
-            startActivity(intent);
-        }
-
-        return super.onOptionsItemSelected(item);
-    }
-
-    private void exportSettings() {
-        Intent fileIntent = new Intent();
-        fileIntent.setAction(Intent.ACTION_CREATE_DOCUMENT);
-        fileIntent.setType("*/*");
-        startActivityForResult(fileIntent, REQUESTCODE_EXPORT);
-    }
-
-    private void importSettings() {
-        Intent fileIntent = new Intent();
-        fileIntent.setAction(Intent.ACTION_GET_CONTENT);
-        fileIntent.setType("*/*");
-        startActivityForResult(fileIntent, REQUESTCODE_IMPORT);
-    }
-
-    @Override
-    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
-        super.onActivityResult(requestCode, resultCode, data);
-
-        if (data == null) return;
-
-        if (resultCode == RESULT_OK) {
-            SharedPreferences prefs = Iconify.getAppContext().getSharedPreferences(Iconify.getAppContext().getPackageName(), Context.MODE_PRIVATE);
-            switch (requestCode) {
-                case REQUESTCODE_IMPORT:
-                    AlertDialog alertDialog = new AlertDialog.Builder(Settings.this).create();
-                    alertDialog.setTitle(getResources().getString(R.string.confirmation));
-                    alertDialog.setMessage(getResources().getString(R.string.you_will_loose_current_setup));
-                    alertDialog.setButton(AlertDialog.BUTTON_POSITIVE, getResources().getString(R.string.positive), (dialog, which) -> {
-                        dialog.dismiss();
-                        try {
-                            Prefs.importPrefs(getContentResolver().openInputStream(data.getData()));
-                            Toast.makeText(Iconify.getAppContext(), getResources().getString(R.string.imported_settings), Toast.LENGTH_LONG).show();
-                        } catch (Exception e) {
-                            Toast.makeText(Iconify.getAppContext(), getResources().getString(R.string.toast_error), Toast.LENGTH_SHORT).show();
-                            e.printStackTrace();
-                        }
-                    });
-                    alertDialog.setButton(AlertDialog.BUTTON_NEGATIVE, getResources().getString(R.string.negative), (dialog, which) -> dialog.dismiss());
-                    alertDialog.show();
-                    break;
-                case REQUESTCODE_EXPORT:
-                    try {
-                        Prefs.exportPrefs(prefs, getContentResolver().openOutputStream(data.getData()));
-                        Toast.makeText(Iconify.getAppContext(), getResources().getString(R.string.exported_settings), Toast.LENGTH_LONG).show();
-                    } catch (Exception e) {
-                        Toast.makeText(Iconify.getAppContext(), getResources().getString(R.string.toast_error), Toast.LENGTH_SHORT).show();
-                        e.printStackTrace();
-                    }
-                    break;
-            }
-        }
+        return view;
     }
 
     @Override
