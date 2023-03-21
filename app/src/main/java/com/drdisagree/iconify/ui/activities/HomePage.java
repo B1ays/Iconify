@@ -1,23 +1,20 @@
 package com.drdisagree.iconify.ui.activities;
 
-import static com.drdisagree.iconify.common.Preferences.EASTER_EGG;
 import static com.drdisagree.iconify.common.Preferences.MONET_ENGINE_SWITCH;
 import static com.drdisagree.iconify.common.Preferences.ON_HOME_PAGE;
+import static com.drdisagree.iconify.common.References.FRAGMENT_HOME;
+import static com.drdisagree.iconify.common.References.FRAGMENT_SETTINGS;
+import static com.drdisagree.iconify.common.References.FRAGMENT_TWEAKS;
 
 import android.Manifest;
 import android.annotation.SuppressLint;
-import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
-import android.view.Menu;
-import android.view.MenuInflater;
-import android.view.MenuItem;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.appcompat.widget.Toolbar;
 import androidx.core.content.ContextCompat;
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentManager;
@@ -30,38 +27,41 @@ import com.drdisagree.iconify.databinding.ActivityHomePageBinding;
 import com.drdisagree.iconify.ui.fragments.Home;
 import com.drdisagree.iconify.ui.fragments.Settings;
 import com.drdisagree.iconify.ui.fragments.Tweaks;
+import com.drdisagree.iconify.ui.utils.FragmentHelper;
 import com.drdisagree.iconify.utils.FabricatedUtil;
 import com.drdisagree.iconify.utils.OverlayUtil;
-import com.google.android.material.appbar.CollapsingToolbarLayout;
 
 import java.util.List;
+import java.util.Objects;
 
 public class HomePage extends AppCompatActivity {
 
     private static final String mData = "mDataKey";
     ActivityHomePageBinding binding;
-    private boolean showMenuIcon = false;
-    private CollapsingToolbarLayout collapsing_toolbar;
     private Integer selectedFragment = null;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        getWindow().setNavigationBarColor(getResources().getColor(R.color.colorNavbarOverlay));
         binding = ActivityHomePageBinding.inflate(getLayoutInflater());
         setContentView(binding.getRoot());
 
-        // Header
-        collapsing_toolbar = findViewById(R.id.collapsing_toolbar);
-        collapsing_toolbar.setTitle(getResources().getString(R.string.activity_title_home_page));
-        Toolbar toolbar = findViewById(R.id.toolbar);
-        setSupportActionBar(toolbar);
-
         Prefs.putBoolean(ON_HOME_PAGE, true);
 
-        if (savedInstanceState != null)
-            selectedFragment = savedInstanceState.getInt(mData);
+        if (savedInstanceState == null) {
+            replaceFragment(new Home(), FRAGMENT_HOME);
+        }
 
-        if (selectedFragment == null) replaceFragment(new Home());
+        FragmentManager fragmentManager = getSupportFragmentManager();
+        fragmentManager.addOnBackStackChangedListener(() -> {
+            if (Objects.equals(FragmentHelper.getTopFragment(fragmentManager), FRAGMENT_HOME))
+                binding.bottomNavigation.getMenu().getItem(0).setChecked(true);
+            else if (Objects.equals(FragmentHelper.getTopFragment(fragmentManager), FRAGMENT_TWEAKS))
+                binding.bottomNavigation.getMenu().getItem(1).setChecked(true);
+            else if (Objects.equals(FragmentHelper.getTopFragment(fragmentManager), FRAGMENT_SETTINGS))
+                binding.bottomNavigation.getMenu().getItem(2).setChecked(true);
+        });
 
         binding.bottomNavigation.setOnItemSelectedListener(item -> {
             setFragment(item.getItemId());
@@ -94,11 +94,21 @@ public class HomePage extends AppCompatActivity {
         }
     }
 
-    private void replaceFragment(Fragment fragment) {
+    private void replaceFragment(Fragment fragment, String tag) {
         FragmentManager fragmentManager = getSupportFragmentManager();
         FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
         fragmentTransaction.setCustomAnimations(R.anim.fragment_fade_in, R.anim.fragment_fade_out, R.anim.fragment_fade_in, R.anim.fragment_fade_out);
-        fragmentTransaction.replace(R.id.main_fragment, fragment);
+        fragmentTransaction.replace(R.id.main_fragment, fragment, tag);
+        if (Objects.equals(tag, FRAGMENT_HOME))
+            fragmentManager.popBackStack(null, FragmentManager.POP_BACK_STACK_INCLUSIVE);
+        else if (Objects.equals(tag, FRAGMENT_TWEAKS) || Objects.equals(tag, FRAGMENT_SETTINGS)) {
+            fragmentManager.popBackStack(null, FragmentManager.POP_BACK_STACK_INCLUSIVE);
+            fragmentTransaction.addToBackStack(tag);
+        } else {
+            fragmentManager.popBackStack(null, 0);
+            fragmentTransaction.addToBackStack(tag);
+        }
+
         fragmentTransaction.commit();
     }
 
@@ -106,73 +116,35 @@ public class HomePage extends AppCompatActivity {
     private void setFragment(int id) {
         switch (id) {
             case R.id.navbar_home:
-                if (binding.bottomNavigation.getSelectedItemId() != R.id.navbar_home) {
-                    replaceFragment(new Home());
-                    collapsing_toolbar.setTitle(getResources().getString(R.string.activity_title_home_page));
-                    showMenuIcon = false;
+                if (!Objects.equals(FragmentHelper.getTopFragment(getSupportFragmentManager()), FRAGMENT_HOME)) {
+                    replaceFragment(new Home(), FRAGMENT_HOME);
                     selectedFragment = R.id.navbar_home;
-                    invalidateOptionsMenu();
                 }
                 break;
-            case R.id.nvabar_tweaks:
-                if (binding.bottomNavigation.getSelectedItemId() != R.id.nvabar_tweaks) {
-                    replaceFragment(new Tweaks());
-                    collapsing_toolbar.setTitle("Tweaks");
-                    showMenuIcon = false;
-                    selectedFragment = R.id.nvabar_tweaks;
-                    invalidateOptionsMenu();
+            case R.id.navbar_tweaks:
+                if (!Objects.equals(FragmentHelper.getTopFragment(getSupportFragmentManager()), FRAGMENT_TWEAKS)) {
+                    replaceFragment(new Tweaks(), FRAGMENT_TWEAKS);
+                    selectedFragment = R.id.navbar_tweaks;
                 }
                 break;
             case R.id.navbar_settings:
-                if (binding.bottomNavigation.getSelectedItemId() != R.id.navbar_settings) {
-                    replaceFragment(new Settings());
-                    collapsing_toolbar.setTitle(getResources().getString(R.string.activity_title_settings));
-                    showMenuIcon = true;
+                if (!Objects.equals(FragmentHelper.getTopFragment(getSupportFragmentManager()), FRAGMENT_SETTINGS)) {
+                    replaceFragment(new Settings(), FRAGMENT_SETTINGS);
                     selectedFragment = R.id.navbar_settings;
-                    invalidateOptionsMenu();
                 }
                 break;
         }
     }
 
     @Override
-    protected void onSaveInstanceState(@NonNull Bundle outState) {
-        super.onSaveInstanceState(outState);
-        outState.putString(mData, String.valueOf(selectedFragment));
+    protected void onSaveInstanceState(@NonNull Bundle savedInstanceState) {
+        super.onSaveInstanceState(savedInstanceState);
+        if (selectedFragment != null) savedInstanceState.putInt(mData, selectedFragment);
     }
 
     @Override
-    public boolean onCreateOptionsMenu(Menu menu) {
-        if (!showMenuIcon) return false;
-
-        MenuInflater inflater = getMenuInflater();
-        inflater.inflate(R.menu.settings_menu, menu);
-
-        menu.findItem(R.id.menu_experimental_features).setVisible(Prefs.getBoolean(EASTER_EGG));
-
-        return super.onCreateOptionsMenu(menu);
-    }
-
-    @Override
-    public boolean onOptionsItemSelected(@NonNull MenuItem item) {
-        int itemID = item.getItemId();
-
-        if (itemID == android.R.id.home) {
-            onBackPressed();
-        } else if (itemID == R.id.menu_updates) {
-            Intent intent = new Intent(this, AppUpdates.class);
-            startActivity(intent);
-        } else if (itemID == R.id.menu_changelog) {
-            Intent intent = new Intent(this, Changelog.class);
-            startActivity(intent);
-        } else if (itemID == R.id.menu_experimental_features) {
-            Intent intent = new Intent(this, Experimental.class);
-            startActivity(intent);
-        } else if (itemID == R.id.menu_info) {
-            Intent intent = new Intent(this, Info.class);
-            startActivity(intent);
-        }
-
-        return super.onOptionsItemSelected(item);
+    public void onRestoreInstanceState(Bundle savedInstanceState) {
+        super.onRestoreInstanceState(savedInstanceState);
+        selectedFragment = savedInstanceState.getInt(mData);
     }
 }
