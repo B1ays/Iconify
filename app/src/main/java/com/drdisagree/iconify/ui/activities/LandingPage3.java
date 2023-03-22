@@ -61,17 +61,9 @@ public class LandingPage3 extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-
-        if (!SystemUtil.isDarkMode()) {
-            getWindow().getDecorView().setBackgroundColor(Color.parseColor("#eef4fe"));
-            getWindow().setStatusBarColor(Color.parseColor("#eef4fe"));
-            getWindow().setNavigationBarColor(Color.parseColor("#eef4fe"));
-        } else {
-            getWindow().getDecorView().setBackgroundColor(Color.parseColor("#080f18"));
-            getWindow().setStatusBarColor(Color.parseColor("#080f18"));
-            getWindow().setNavigationBarColor(Color.parseColor("#080f18"));
-        }
-
+        getWindow().getDecorView().setBackgroundColor(getResources().getColor(R.color.landing_page_three_background));
+        getWindow().setStatusBarColor(getResources().getColor(R.color.landing_page_three_background));
+        getWindow().setNavigationBarColor(getResources().getColor(R.color.landing_page_three_background));
         setContentView(R.layout.activity_landing_page_three);
 
         ((LottieAnimationView) findViewById(R.id.welcome_anim)).setAnimation(!isDarkMode() ? R.raw.anim_view_three_day : R.raw.anim_view_three_night);
@@ -122,8 +114,8 @@ public class LandingPage3 extends AppCompatActivity {
                             });
                         } else {
                             Intent intent = new Intent(LandingPage3.this, HomePage.class);
+                            intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK | Intent.FLAG_ACTIVITY_NEW_TASK);
                             startActivity(intent);
-                            finish();
                         }
                     }
                 } else {
@@ -395,8 +387,8 @@ public class LandingPage3 extends AppCompatActivity {
                 if (OverlayUtil.overlayExists()) {
                     new Handler().postDelayed(() -> {
                         Intent intent = new Intent(LandingPage3.this, HomePage.class);
+                        intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK | Intent.FLAG_ACTIVITY_NEW_TASK);
                         startActivity(intent);
-                        finish();
                     }, 10);
                 } else {
                     showInfo(R.string.need_reboot_title, R.string.need_reboot_desc);
